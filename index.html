@@ -1,0 +1,95 @@
+<html>
+    <header>
+        <script>
+            var canvas;
+            var ctx;
+            var myRizard = null;
+            var myMonsters = [];
+            var myFires = [];
+
+            function component(imgId, x, y, width, height) {
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.imgId = imgId;
+
+                this.start = function() {
+                    ctx.drawImage(document.getElementById(this.imgId), this.x, this.y, this.width, this.height);
+                }
+
+                this.update = function() {
+                    ctx.drawImage(document.getElementById(this.imgId), this.x, this.y, this.width, this.height);
+                }
+            }
+
+             function init() {
+                canvas = document.getElementById('canvas');
+                ctx = canvas.getContext('2d');
+
+                // Draw slice
+                ctx.drawImage(document.getElementById('rizard'), 0, 200, 200, 200);
+
+                myRizard = new component('rizard', 0, 200, 200, 200);
+
+                addNewMonster();
+
+                setInterval(update, 200);
+                setInterval(addNewMonster, 3000);
+            }
+
+            function update() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                myRizard.update();
+
+                var tobeDeletedMonsters = [];
+                var tobeDeletedFires = [];
+
+                myFires.forEach(myFire => {
+                    myMonsters.forEach(myMonster => {
+                        if(myFire.x >= myMonster.x) {
+                            tobeDeletedMonsters.push(myMonster);
+                            tobeDeletedFires.push(myFire);
+                        }
+                    });
+                });
+
+                myMonsters = myMonsters.filter((value, index) => !tobeDeletedMonsters.includes(value));
+                myFires = myFires.filter((value, index) => !tobeDeletedFires.includes(value));
+
+                myMonsters.forEach(myMonster => {
+                    myMonster.x = myMonster.x - 10;
+                    myMonster.update();                    
+                });
+
+                myFires.forEach(myFire => {
+                    myFire.x = myFire.x + 10;
+                    myFire.update();                    
+                });
+            }
+
+            function clickedFire() {
+                var fire = new component('fire', 180, 200, 100, 100);
+                fire.start();
+
+                myFires.push(fire);
+            }
+
+            function addNewMonster() {
+                var myMonster = new component('monster', 400, 200, 200, 200);
+                myMonster.start();
+                myMonsters.push(myMonster);
+            }
+       </script>
+    </header>
+    <body onload="init();">
+        <script>
+        </script>
+        <canvas id=canvas width="1000" height="400"></canvas>
+        <img id="rizard" src="as.png" style="display:none" >
+        <img id="monster" src="mg.png" style="display:none" >
+        <img id="fire" src="fire.png" style="display:none" >
+        <button style="width: 500;height: 100" onclick="clickedFire();">발사</button>
+    </body>
+</html>
