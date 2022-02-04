@@ -5,16 +5,23 @@
             var ctx;
             var myRizard = null;
             var myMonsters = [];
-            var myFires = [];
+            var myFireBalls = [];
 
-            function component(imgId, x, y, width, height) {
+            var score = 0;
+            var total = 10;
+            var fireTick = 0;
+            var fireExistTimes = 5;
+            var fire = null;
+
+            function component(imgId, x, y, width, height, moveX) {
                 this.x = x;
                 this.y = y;
                 this.width = width;
                 this.height = height;
                 this.imgId = imgId;
+                this.moveX = moveX;
 
-                this.start = function() {
+                this.draw = function() {
                     ctx.drawImage(document.getElementById(this.imgId), this.x, this.y, this.width, this.height);
                 }
 
@@ -29,8 +36,10 @@
 
                 // Draw slice
                 ctx.drawImage(document.getElementById('rizard'), 0, 200, 200, 200);
+                drawHP();
+                               
 
-                myRizard = new component('rizard', 0, 200, 200, 200);
+                myRizard = new component('rizard', 0, 200, 200, 200, 0);
 
                 addNewMonster();
 
@@ -46,7 +55,7 @@
                 var tobeDeletedMonsters = [];
                 var tobeDeletedFires = [];
 
-                myFires.forEach(myFire => {
+                myFireBalls.forEach(myFire => {
                     myMonsters.forEach(myMonster => {
                         if(myFire.x >= myMonster.x) {
                             tobeDeletedMonsters.push(myMonster);
@@ -55,30 +64,70 @@
                     });
                 });
 
+                var h1 = document.getElementById("score");
+                score += tobeDeletedMonsters.length;
+                h1.innerText = score + " / " + total;
+
+                var levimg = document.getElementById("rizard");
+                if(score >= 10 && total == 10) {
+                    score = 0;
+                    total = 100;
+                    levimg.src = "as2.png";
+                }
+
+                if(score >= 0 && total == 100) {
+                    var btn = document.getElementById("eye");
+                    btn.style.display = "block";
+                }
+
                 myMonsters = myMonsters.filter((value, index) => !tobeDeletedMonsters.includes(value));
-                myFires = myFires.filter((value, index) => !tobeDeletedFires.includes(value));
+                myFireBalls = myFireBalls.filter((value, index) => !tobeDeletedFires.includes(value));
 
                 myMonsters.forEach(myMonster => {
-                    myMonster.x = myMonster.x - 10;
+                    myMonster.x = myMonster.x + myMonster.moveX;
                     myMonster.update();                    
                 });
 
-                myFires.forEach(myFire => {
-                    myFire.x = myFire.x + 10;
+                myFireBalls.forEach(myFire => {
+                    myFire.x = myFire.x + myFire.moveX;
                     myFire.update();                    
                 });
+
+                if(fireExistTimes > fireTick)
+                {
+                    fireTick++;
+                    fire.update();
+                }
+
+                drawHP();
             }
 
-            function clickedFire() {
-                var fire = new component('fire', 180, 200, 100, 100);
-                fire.start();
+            function drawHP()
+            {
+                ctx.drawImage(document.getElementById('hp'), 0, 20, 30, 30);
+                ctx.drawImage(document.getElementById('hp'), 30, 20, 30, 30);
+                ctx.drawImage(document.getElementById('hp'), 60, 20, 30, 30);
+            }
 
-                myFires.push(fire);
+
+            function clickedFireBall() {
+                var fire = new component('fireBall', 180, 200, 100, 100, 10);
+                fire.draw();
+
+                myFireBalls.push(fire);
+                myMovingFires.push(fire);
+            }
+
+            function clickedFire2() {
+                fire = new component('fire2', 180, 200, 200, 200, 0);
+                fire.draw();
+
+                fireTick = 0;
             }
 
             function addNewMonster() {
-                var myMonster = new component('monster', 400, 200, 200, 200);
-                myMonster.start();
+                var myMonster = new component('monster', 1000, 200, 200, 200, -10);
+                myMonster.draw();
                 myMonsters.push(myMonster);
             }
        </script>
@@ -86,10 +135,16 @@
     <body onload="init();">
         <script>
         </script>
+        <h1 id=score>0 / 1000</h1>
         <canvas id=canvas width="1000" height="400"></canvas>
         <img id="rizard" src="as.png" style="display:none" >
         <img id="monster" src="mg.png" style="display:none" >
-        <img id="fire" src="fire.png" style="display:none" >
-        <button style="width: 500;height: 100" onclick="clickedFire();">발사</button>
+        <img id="fireBall" src="fire.png" style="display:none" >
+        <img id="fire2" src="fire2.png" style="display:none" >
+        <img id="hp" src="Hp.png" style="display:none" >
+        
+
+        <button id=eye style="width: 500;height: 100;" onclick="clickedFire2();">근거리공격</button>
+        <button style="width: 500;height: 100" onclick="clickedFireBall();">기본공격</button style="display:none">
     </body>
 </html>
